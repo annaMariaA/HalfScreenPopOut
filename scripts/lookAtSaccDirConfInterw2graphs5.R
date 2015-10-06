@@ -80,3 +80,13 @@ pltDat = filter(pltDat, fixNum<5)
 plt = ggplot(pltDat, aes(x=side, y=fixX, fill=side))  + geom_bar(stat="identity")
 plt = plt + facet_wrap(~fixNum)
 ggsave("../plots/FixXsideByFixNum.pdf", width=9, height=9)
+
+# now exlcude proportion 
+propDat = filter(fixdat, side!="central", fixNum<11)
+propDat$propHetro = (propDat$side == "hetro")
+propDat = aggregate(data=propDat, propHetro~subj + fixNum, FUN="mean")
+
+plt = ggplot(propDat, aes(x=fixNum, y=propHetro, colour=subj))
+plt = plt + geom_point() + geom_smooth(se=F)
+plt = plt + theme_bw()
+ggsave("../plots/FixXsideByFixNumAndSubj.pdf", width=9, height=9)

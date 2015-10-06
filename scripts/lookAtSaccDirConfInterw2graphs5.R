@@ -1,6 +1,10 @@
-#setwd("C:/Users/r02al13/Desktop/LineSegmEasyDiff")
-setwd("C:/Users/r02al13/Desktop/HalfPopOutAnalysisToday")
-fixdat = readRDS(file="data/processedFixData.Rda")
+library(dplyr)
+library(ggplot2)
+
+# # setwd("~/Desktop/HalfPopOutAnalysisToday")
+# setwd("~/Documents/HalfPopOutAnalysisToday")
+
+fixdat = readRDS(file="../data/processedFixData.Rda")
 cbPalette <- c("#56B4E9", "#E69F00")
 library(lme4)
 library(ggplot2)
@@ -11,14 +15,13 @@ library(scales)
 nbins = 16
 bw = 360/nbins	
 # only look at TA trials
-fixdat = fixdat[fixdat$targSide=="absent",]
+fixdat = filter(fixdat, targSide=="absent")
+
 fixdat$hemiType="unmodified"
 
 fixdat$saccAng = (180/pi) * (fixdat$saccAng ) + 180
 fixdat$saccAng = ((fixdat$saccAng) %% 360)
 
-
-library(ggplot2)
 
 # first look at amplitude
 ampplot = ggplot(fixdat, aes(x=saccAmp)) + geom_density()
@@ -52,80 +55,28 @@ for (h in levels(fixdat$hemiType))
 #rosepltAng <- rosepltAng +scale_y_continuous(name=" ",breaks=NULL)+ coord_polar(start=0, direction=1)+theme_bw() + facet_grid(.~hemiType)
 
 
-# get distribution for left v right saccades
-sideAngularWidth = 90
 
-intoBlindl = 270 - sideAngularWidth/2
-intoBlindu = 270 + sideAngularWidth/2
-intoSightl = 090 - sideAngularWidth/2
-intoSightu = 090 + sideAngularWidth/2
+# Plot distribution of fixation x-coord by fixation number
 
-fixdat$saccSide = NA
-fixdat$saccSide[which(fixdat$saccAng>=intoBlindl & fixdat$saccAng<=intoBlindu)] = "hetero"
-fixdat$saccSide[which(fixdat$saccAng>=intoSightl & fixdat$saccAng<=intoSightu)] = "homo"
-fixdat$saccSide = as.factor(fixdat$saccSide)
-
-fixdat$saccAmp[which(fixdat$saccSide=="hetero")] = -fixdat$saccAmp[which(fixdat$saccSide=="hetero")]
-sideplt = ggplot(na.omit(fixdat), aes(x=saccAmp, fill=saccSide)) + geom_density(alpha = 1.0, trim=TRUE)
-sideplt = sideplt  + scale_x_continuous(name="Saccadic Amplitude", limits=c(-1024,1024),   breaks=c(-1024, 0, 1024), minor_breaks=c(seq(-1024,1024, 128)))
-sideplt = sideplt  + theme_bw()+  theme(axis.text.x = element_blank(), axis.text.y = element_blank()) +scale_fill_manual(name="Target position", values=cbPalette)
-ggsave("plots/sightVblindSaccAmp.pdf", width=10, height=3)
-
-fixdat = fixdat[fixdat$fixNum<11,]
-fixdat = fixdat[fixdat$fixX<1024 &fixdat$fixX>0 ,]
-m <- ggplot(fixdat, aes(x = fixX))
-m= m + geom_histogram(fill="green") + facet_wrap(~fixNum, scales="free_y", nrow=2)
-m =m + theme_bw()
-
-pd<-position_dodge(.1)
-fixdat = fixdat[which(fixdat$fixNum==1),]
-fixdat$prop = fixdat$saccSide == "blind"
-fixdatLeft=fixdat[which(fixdat$easySide=="right"& fixdat$prop="TRUE"),]
-fixdatRight=fixdat[which(fixdat$easySide=="left"& fixdat$prop="TRUE"),]
+m = ggplot(
+	data=filter(fixdat, fixNum<13, fixX<1024, fixX>0), 
+	aes(x = fixX))
+m = m + geom_histogram(fill="purple", binwidth=64) 
+m = m + facet_wrap(~fixNum, scales="free_y", nrow=4)
+m = m + theme_bw()
+m = m + scale_x_continuous(name="fixation horizontal postition", breaks=c(0,512,1024), expand=c(0,0))
+ggsave("../plots/FixXpostByFixNum.pdf", width=9, height=9)
 
 
-propSaccBlind = aggregate(data=fixdat, fixX~subj + easySide, FUN="mean")
+# classify every fixation as homo (left), central, or hetro (right)
+centralWidth = 64 #change to 1 visual degree
+fixdat$side = 'central'
+fixdat$side[which(fixdat$fixX <(512-centralWidth/2))] = "homo"
+fixdat$side[which(fixdat$fixX >(512+centralWidth/2))] = "hetro"
+fixdat$side = as.factor(fixdat$side)
 
-p <- ggplot(propSaccBlind, aes(factor(subj), fixX))
-p=p+ geom_boxplot() 
-p=p+ coord_flip()
-ggsave("plots/ProportionFirstintoHardSideFixX.jpg", width=10, height=3)
-write.csv(propSaccBlind, "data/proportionFirstIntoBlind.txt", row.names=F)
-
-propSaccBlind$subj <- factor(propSaccBlind$subj, levels = c("1", "2", "3","4", "5", "6","8", "9", "10","11", "12", "13","14", "15", "16","18", "19", "20","21", "22"))
-errorBar=summarySE(propSaccBlind, measurevar="prop", groupvars=c("var", "hemiType"))
-p1 = ggplot(data=errorBar, aes(x=var, y=prop, group=hemiType, colour=hemiType,group=supp))+geom_line(position=pd, size=1 )+geom_point(position=pd,size=2)
-p1 = p1 + scale_y_continuous(name="proportion of all saccades into blind") + scale_x_discrete(name="Search Difficulty")+ scale_color_manual(name="Hemianopia",values=cbPalette)
-p1=p1+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-    panel.background = element_blank(), axis.line = element_line(colour = "black"))
-p1 = p1 + geom_errorbar(aes(ymin=prop-ci, ymax=prop+ci), width=.1, position=pd)
-
-fixdat = fixdat[which(fixdat$fixNum==1),]
-propSaccBlind = aggregate(data=fixdat, prop ~ subj+var+hemiType, FUN="mean")
-propSaccBlind$subj <- factor(propSaccBlind$subj, levels = c("1", "2", "3","4", "5", "6","8", "9", "10","11", "12", "13","14", "15", "16","18", "19", "20","21", "22"))
-errorBar=summarySE(propSaccBlind, measurevar="prop", groupvars=c("var", "hemiType"))
-p2 = ggplot(data=errorBar, aes(x=var, y=prop, group=hemiType, colour=hemiType,group=supp))+geom_line(position=pd, size=1 )+geom_point(position=pd,size=2)
-p2 = p2 + scale_y_continuous(name="proportion of first saccades into blind") + scale_x_discrete(name="Search Difficulty") + scale_color_manual(name="Hemianopia",values=cbPalette)
-p2=p2+ theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), 
-    panel.background = element_blank(), axis.line = element_line(colour = "black"))
-
-p2 = p2 + geom_errorbar(aes(ymin=prop-ci, ymax=prop+ci), width=.1, position=pd)
-
-
-library(gridExtra)
-get_legend<-function(myggplot){
-  tmp <- ggplot_gtable(ggplot_build(myggplot))
-  leg <- which(sapply(tmp$grobs, function(x) x$name) == "guide-box")
-  legend <- tmp$grobs[[leg]]
-  return(legend)
-}
-legend<- get_legend(p1)
-legend<- get_legend(p2)
-p1<- p1+ theme(legend.position="none")
-p2<- p2+ theme(legend.position="none")
-jpeg(filename = "Myplot.jpg",width=900,height=600, pointsize =10, quality = 1000, bg = "white", res = 150, restoreConsole = TRUE)
-
-grid.arrange(p1,p2,legend,ncol=3,widths=c(12,12, 5))
-dev.off()
-
-
+pltDat = aggregate(data=fixdat, fixX ~ side + fixNum, FUN="length")
+pltDat = filter(pltDat, fixNum<5)
+plt = ggplot(pltDat, aes(x=side, y=fixX, fill=side))  + geom_bar(stat="identity")
+plt = plt + facet_wrap(~fixNum)
+ggsave("../plots/FixXsideByFixNum.pdf", width=9, height=9)

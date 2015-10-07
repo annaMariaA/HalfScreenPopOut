@@ -1,5 +1,6 @@
 library(dplyr)
 library(ggplot2)
+library(binom)
 
 # # setwd("~/Desktop/HalfPopOutAnalysisToday")
 # setwd("~/Documents/HalfPopOutAnalysisToday")
@@ -86,7 +87,29 @@ propDat = filter(fixdat, side!="central", fixNum<11)
 propDat$propHetro = (propDat$side == "hetro")
 propDat = aggregate(data=propDat, propHetro~subj + fixNum, FUN="mean")
 
-plt = ggplot(propDat, aes(x=fixNum, y=propHetro, colour=subj))
-plt = plt + geom_point() + geom_smooth(se=F)
-plt = plt + theme_bw()
-ggsave("../plots/FixXsideByFixNumAndSubj.pdf", width=9, height=9)
+
+aggData = (filter(fixdat, side!="central", fixNum<11) 
+  %>% group_by(fixNum, subj) 
+    %>% summarise(
+     propHetro=mean(side=="hetro"), 
+     nTrials=length(trial),
+     lower = binom.confint(propHetro*nTrials,nTrials, method='wilson')$lower,
+     upper = binom.confint(propHetro*nTrials,nTrials, method='wilson')$upper))
+
+plt = ggplot(aggData, aes(x=fixNum, y=propHetro, ymin=lower, ymax=upper, colour=subj))
+plt = plt + geom_point() + geom_path(se=F) + geom_errorbar()
+plt = plt + theme_bw() + facet_wrap(~subj)
+ggsave("../plots/FixXsideByFixNumAndSubjExCentral.pdf", width=9, height=9)
+
+aggData = (filter(fixdat, fixNum<11) 
+  %>% group_by(fixNum, subj) 
+    %>% summarise(
+      propHetro=mean(side=="hetro"), 
+      nTrials=length(trial),
+      lower = binom.confint(propHetro*nTrials,nTrials, method='wilson')$lower,
+      upper = binom.confint(propHetro*nTrials,nTrials, method='wilson')$upper))
+
+plt = ggplot(aggData, aes(x=fixNum, y=propHetro, ymin=lower, ymax=upper, colour=subj))
+plt = plt + geom_point() + geom_path(se=F) + geom_errorbar()
+plt = plt + theme_bw() + facet_wrap(~subj)
+ggsave("../plots/FixXsideByFixNumAndSubjIncCentral.pdf", width=9, height=9)

@@ -13,54 +13,13 @@ library(scales)
 #library(bear)
 #library(boot)
 
-nbins = 16
-bw = 360/nbins	
-# only look at TA trials
-fixdat = filter(fixdat, targSide=="absent")
-
-fixdat$hemiType="unmodified"
-
-fixdat$saccAng = (180/pi) * (fixdat$saccAng ) + 180
-fixdat$saccAng = ((fixdat$saccAng) %% 360)
-
-
-# first look at amplitude
-ampplot = ggplot(fixdat, aes(x=saccAmp)) + geom_density()
-ampplot
-saccAngle = data.frame(theta=numeric(), med_amp=numeric(), count=numeric(), hemiType=character())
-for (h in levels(fixdat$hemiType))
-{
-  	# do rest of bins
-	for (b in 1:nbins)
-    {
-    	b1 = (b-1)*bw 
-    	b2 = (b)*bw 
- 		# get median saccade amplitude for these saccades
-   	 	idx = which(fixdat$saccAng>=b1 & fixdat$saccAng<b2 & fixdat$hemiType==h)
-   	 	count = length(idx)/length(which(fixdat$hemiType==h))
-   	 	medsaccamp = median(fixdat$saccAmp[idx])
-  	 	saccAngle = rbind(saccAngle, data.frame(theta=(b-1)*bw+bw/2, med_amp=medsaccamp, count=count, hemiType=h))
-   }
-}
-
-
-#rosepltAng <- ggplot(saccAngle, aes(x=theta, y=count)) + geom_bar(width=bw, stat="identity") 
-#rosepltAng <- rosepltAng + scale_x_continuous(name=" ", limits=c(0,360), breaks = c(0, 45, 90, 135, 180, 225, 270, 315))
-#rosepltAng <- rosepltAng +scale_y_continuous(name=" ",breaks=NULL)+ coord_polar(start=0, direction=1)+theme_bw() + facet_grid(.~hemiType)
-#ggsave("../plots/roseplot.pdf", width=10, height=5)
-
-
-
-#rosepltAng <- ggplot(saccAngle, aes(x=theta, y=med_amp)) + geom_bar(width=bw, stat="identity") 
-#rosepltAng <- rosepltAng + scale_x_continuous(name=" ", limits=c(0,360), breaks = c(0, 45, 90, 135, 180, 225, 270, 315))
-#rosepltAng <- rosepltAng +scale_y_continuous(name=" ",breaks=NULL)+ coord_polar(start=0, direction=1)+theme_bw() + facet_grid(.~hemiType)
 
 
 
 # Plot distribution of fixation x-coord by fixation number
 
 m = ggplot(
-	data=filter(fixdat, fixNum<13, fixX<1024, fixX>0), 
+	data=filter(fixdat, fixNum<13, fixX<1024, fixX>0, targSide=="absent"), 
 	aes(x = fixX))
 m = m + geom_histogram(fill="purple", binwidth=64) 
 m = m + facet_wrap(~fixNum, scales="free_y", nrow=4)
@@ -76,19 +35,7 @@ fixdat$side[which(fixdat$fixX <(512-centralWidth/2))] = "homo"
 fixdat$side[which(fixdat$fixX >(512+centralWidth/2))] = "hetro"
 fixdat$side = as.factor(fixdat$side)
 
-pltDat = aggregate(data=fixdat, fixX ~ side + fixNum, FUN="length")
-pltDat = filter(pltDat, fixNum<5)
-plt = ggplot(pltDat, aes(x=side, y=fixX, fill=side))  + geom_bar(stat="identity")
-plt = plt + facet_wrap(~fixNum)
-ggsave("../plots/FixXsideByFixNum.pdf", width=9, height=9)
-
-# now exlcude proportion 
-propDat = filter(fixdat, side!="central", fixNum<11)
-propDat$propHetro = (propDat$side == "hetro")
-propDat = aggregate(data=propDat, propHetro~subj + fixNum, FUN="mean")
-
-
-aggData = (filter(fixdat, side!="central", fixNum<11) 
+aggData = (filter(fixdat, side!="central", fixNum<11, fixNum>1, targSide=="absent") 
   %>% group_by(fixNum, subj) 
     %>% summarise(
      propHetro=mean(side=="hetro"), 
@@ -96,20 +43,77 @@ aggData = (filter(fixdat, side!="central", fixNum<11)
      lower = binom.confint(propHetro*nTrials,nTrials, method='wilson')$lower,
      upper = binom.confint(propHetro*nTrials,nTrials, method='wilson')$upper))
 
-plt = ggplot(aggData, aes(x=fixNum, y=propHetro, ymin=lower, ymax=upper, colour=subj))
+plt = ggplot(aggData, aes(x=fixNum, y=propHetro, ymin=lower, ymax=upper))
 plt = plt + geom_point() + geom_path(se=F) + geom_errorbar()
 plt = plt + theme_bw() + facet_wrap(~subj)
+plt = plt + scale_x_continuous(name="fixation number", breaks=c(2,4,6,8,10))
+plt = plt + scale_y_continuous(name="proportion of fixations to heterogeneous side")
 ggsave("../plots/FixXsideByFixNumAndSubjExCentral.pdf", width=9, height=9)
 
-aggData = (filter(fixdat, fixNum<11) 
-  %>% group_by(fixNum, subj) 
-    %>% summarise(
-      propHetro=mean(side=="hetro"), 
-      nTrials=length(trial),
-      lower = binom.confint(propHetro*nTrials,nTrials, method='wilson')$lower,
-      upper = binom.confint(propHetro*nTrials,nTrials, method='wilson')$upper))
 
-plt = ggplot(aggData, aes(x=fixNum, y=propHetro, ymin=lower, ymax=upper, colour=subj))
-plt = plt + geom_point() + geom_path(se=F) + geom_errorbar()
-plt = plt + theme_bw() + facet_wrap(~subj)
-ggsave("../plots/FixXsideByFixNumAndSubjIncCentral.pdf", width=9, height=9)
+# get mean person plot
+aggData2 = (filter(aggData, fixNum<11) 
+  %>% group_by(fixNum) 
+    %>% summarise(
+     mPropHetro=mean(propHetro), 
+     stddev = sd(propHetro),
+     stderr=stddev/sqrt(12),
+    lower=mPropHetro-1.96*stderr,
+    upper=mPropHetro+1.96*stderr))
+
+plt = ggplot(aggData2, aes(x=fixNum,y=mPropHetro, ymin=lower, ymax=upper))
+plt = plt + geom_path() + geom_errorbar()# + geom_hline(y=0.5)
+plt = plt + theme_bw() 
+plt = plt + scale_y_continuous(name="proportion of fixations to heterogeneous side", breaks=c(0,0.5,1), limits=c(0,1))
+plt = plt + scale_x_continuous('fixation number', breaks=c(2,4,6,8,10))
+ggsave("../plots/meanPersonSplide.pdf", width=6, height=4)
+
+fixWasteDat = (fixdat
+%>% group_by(subj, targSide, trial)
+%>% summarise(
+ fixNumTotal =max(fixNum),
+ fixNumHomo = sum(side=="homo")))
+
+rtdat = readRDS(file="../data/processedRTandAccData.Rda")
+
+fixWasteDat = merge(fixWasteDat, rtdat)
+
+plt = ggplot(filter(fixWasteDat, targSide=="absent"), aes(x=fixNumHomo, y=RT)) 
+plt = plt + geom_point(colour="gray") + geom_smooth(method="lm", se=F, colour="black")
+plt = plt + theme_bw()
+plt = plt + scale_x_continuous(name="num. fix. to homogeneous side")
+plt = plt + scale_y_continuous(name="reaction time (seconds)")
+ggsave("../plots/trialByTrialCor.pdf", height=3, width=3)
+
+library(lme4)
+m = lmer(data=filter(fixWasteDat, targSide=="absent"), fixNumTotal~fixNumHomo + (fixNumHomo|subj))
+summary(m)
+
+m = lmer(data=filter(fixWasteDat, targSide=="absent"), 
+	RT~fixNumHomo + (fixNumHomo|subj))
+summary(m)
+
+
+
+indivDiffCorr = (filter(fixdat, side!="central", fixNum<11, fixNum>1, targSide=="absent") 
+  %>% group_by(subj) 
+    %>% summarise(
+     propHomo=mean(side=="homo")))
+
+hetroRT = (filter(rtdat, targSide=="hetrogeneous", acc==1, is.finite(RT)) 
+  %>% group_by(subj) 
+    %>% summarise(
+     medianRT_hetro = median(RT)))
+
+homoRT = (filter(rtdat, targSide=="homogeneous", acc==1, is.finite(RT)) 
+  %>% group_by(subj) 
+    %>% summarise(
+     medianRT_homo = median(RT)))
+
+dat = merge(homoRT, merge(hetroRT, indivDiffCorr))
+
+plt = ggplot(dat, aes(x=propHomo, y=medianRT_hetro)) + geom_point(colour="grey") + geom_smooth(method="lm", se=F, colour="black")
+plt = plt + theme_bw()
+plt = plt + scale_x_continuous(name="TA prop. fix. to homo. side", limits=c(0,1))
+plt = plt + scale_y_continuous(name="median TP RT (seconds")
+ggsave("../plots/personByPersonCor.pdf", height=3, width=3)

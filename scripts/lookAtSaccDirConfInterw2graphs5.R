@@ -66,12 +66,12 @@ plt = plt + geom_path() + geom_errorbar()# + geom_hline(y=0.5)
 plt = plt + theme_bw() 
 plt = plt + scale_y_continuous(name="proportion of fixations to heterogeneous side", breaks=c(0,0.5,1), limits=c(0,1))
 plt = plt + scale_x_continuous('fixation number', breaks=c(2,4,6,8,10))
-ggsave("../plots/meanPersonSplide.pdf", width=6, height=4)
+ggsave("../plots/meanPersonSide.pdf", width=6, height=4)
 
-fixWasteDat = (fixdat
+fixWasteDat = (filter(fixdat, side!="central")
 %>% group_by(subj, targSide, trial)
 %>% summarise(
- fixNumTotal =max(fixNum),
+ fixNumTotal =length(fixNum),
  fixNumHomo = sum(side=="homo")))
 
 rtdat = readRDS(file="../data/processedRTandAccData.Rda")
@@ -83,7 +83,7 @@ plt = plt + geom_point(colour="gray") + geom_smooth(method="lm", se=F, colour="b
 plt = plt + theme_bw()
 plt = plt + scale_x_continuous(name="num. fix. to homogeneous side")
 plt = plt + scale_y_continuous(name="reaction time (seconds)")
-ggsave("../plots/trialByTrialCor.pdf", height=3, width=3)
+ggsave("../plots/trialByTrialCor.pdf", height=3.2, width=3.2)
 
 library(lme4)
 m = lmer(data=filter(fixWasteDat, targSide=="absent"), fixNumTotal~fixNumHomo + (fixNumHomo|subj))
@@ -95,7 +95,7 @@ summary(m)
 
 
 
-indivDiffCorr = (filter(fixdat, side!="central", fixNum<11, fixNum>1, targSide=="absent") 
+indivDiffCorr = (filter(fixdat, side!="central", fixNum<6, fixNum>1, targSide=="absent") 
   %>% group_by(subj) 
     %>% summarise(
      propHomo=mean(side=="homo")))
@@ -114,6 +114,7 @@ dat = merge(homoRT, merge(hetroRT, indivDiffCorr))
 
 plt = ggplot(dat, aes(x=propHomo, y=medianRT_hetro)) + geom_point(colour="grey") + geom_smooth(method="lm", se=F, colour="black")
 plt = plt + theme_bw()
-plt = plt + scale_x_continuous(name="TA prop. fix. to homo. side", limits=c(0,1))
-plt = plt + scale_y_continuous(name="median TP RT (seconds")
-ggsave("../plots/personByPersonCor.pdf", height=3, width=3)
+plt = plt + scale_x_continuous(name="prop. homogeneous fixations (absent)", limits=c(0,1))
+plt = plt + scale_y_continuous(name="median RT (present)")
+plt = plt + geom_text(data=NULL, label="A", x = 0, y=8 )
+ggsave("../plots/personByPersonCor.pdf", height=3.2, width=3.2)

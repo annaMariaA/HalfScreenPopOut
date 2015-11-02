@@ -111,7 +111,7 @@ homoRT = (filter(rtdat, targSide=="homogeneous", acc==1, is.finite(RT))
      medianRT_homo = median(RT)))
 
 dat = merge(homoRT, merge(hetroRT, indivDiffCorr))
-write.table(dat, "data/correlationData10.txt", sep=",")
+write.table(dat, "data/correlationData14pps10fix.txt", sep=",")
 
 plt = ggplot(dat, aes(x=propHomo, y=medianRT_hetro)) + geom_point(colour="grey") + geom_smooth(method="lm", se=F, colour="black")
 plt = plt + theme_bw()

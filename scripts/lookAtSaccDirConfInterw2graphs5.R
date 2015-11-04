@@ -4,9 +4,16 @@ library(binom)
 
 # # setwd("~/Desktop/HalfPopOutAnalysisToday")
 # setwd("~/Documents/HalfPopOutAnalysisToday")
+<<<<<<< Updated upstream
  setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut")
 fixdat = readRDS(file="data/processedFixData.Rda")
 fixdat = (filter(fixdat, subj!=4, subj!=15 ,) 
+=======
+
+fixdat = readRDS(file="../data/processedFixData.Rda")
+
+levels(fixdat$subj) = 1:12
+>>>>>>> Stashed changes
 cbPalette <- c("#56B4E9", "#E69F00")
 library(lme4)
 library(ggplot2)
@@ -84,20 +91,32 @@ fixWasteDat = merge(fixWasteDat, rtdat)
 plt = ggplot(filter(fixWasteDat, targSide=="absent"), aes(x=fixNumHomo, y=RT)) 
 plt = plt + geom_point(colour="gray") + geom_smooth(method="lm", se=F, colour="black")
 plt = plt + theme_bw()
+<<<<<<< Updated upstream
 plt = plt + scale_x_continuous(name="num. fix. to homogeneous side")
 plt = plt + scale_y_continuous(name="reaction time (seconds)")
 ggsave("plots/trialByTrialCor.pdf", height=3.2, width=3.2)
 ggsave("plots/trialByTrialCor.jpg",dpi=600, height=3.2, width=3.2)
+=======
+plt = plt + scale_x_continuous(name="num homogeneous fixations (absent)")
+plt = plt + scale_y_continuous(name="reaction time (s)")
+plt = plt + geom_text(data=NULL, label="B", x=-Inf, y=Inf, vjust=2,hjust=-1, size=5)
+ggsave("../plots/trialByTrialCor.pdf", height=3.2, width=3.2)
+>>>>>>> Stashed changes
 
 library(lme4)
-m = lmer(data=filter(fixWasteDat, targSide=="absent"), fixNumTotal~fixNumHomo + (fixNumHomo|subj))
-summary(m)
+
 
 m = lmer(data=filter(fixWasteDat, targSide=="absent"), 
 	RT~fixNumHomo + (fixNumHomo|subj))
 summary(m)
 
+m = lmer(data=filter(fixWasteDat, targSide=="hetrogeneous"), 
+  RT~fixNumHomo + (fixNumHomo|subj))
+summary(m)
 
+m = lmer(data=filter(fixWasteDat, targSide=="homogeneous"), 
+  RT~fixNumHomo + (fixNumHomo|subj))
+summary(m)
 
 indivDiffCorr = (filter(fixdat, side!="central", fixNum<11, fixNum>1, targSide=="absent") 
   %>% group_by(subj) 
@@ -117,9 +136,17 @@ homoRT = (filter(rtdat, targSide=="homogeneous", acc==1, is.finite(RT))
 dat = merge(homoRT, merge(hetroRT, indivDiffCorr))
 write.table(dat, "data/correlationData14pps10fix.txt", sep=",")
 
+cor.test(dat$medianRT_homo, dat$propHomo)
+
 plt = ggplot(dat, aes(x=propHomo, y=medianRT_hetro)) + geom_point(colour="grey") + geom_smooth(method="lm", se=F, colour="black")
 plt = plt + theme_bw()
 plt = plt + scale_x_continuous(name="prop. homogeneous fixations (absent)", limits=c(0,1))
 plt = plt + scale_y_continuous(name="median RT (present)")
+<<<<<<< Updated upstream
 plt = plt + geom_text(data=NULL, label="A", x = 0, y=8 )
 ggsave("plots/personByPersonCor.pdf", height=3.2, width=3.2)
+=======
+plt = plt + geom_text(data=NULL, label="A", x=-Inf, y=Inf, vjust=2,hjust=-1, size=5)
+plt
+ggsave("../plots/personByPersonCor.pdf", height=3.2, width=3.2)
+>>>>>>> Stashed changes

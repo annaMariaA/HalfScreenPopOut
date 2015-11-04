@@ -4,14 +4,16 @@ library(binom)
 
 # # setwd("~/Desktop/HalfPopOutAnalysisToday")
 # setwd("~/Documents/HalfPopOutAnalysisToday")
-
+ setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut")
 fixdat = readRDS(file="data/processedFixData.Rda")
+fixdat = (filter(fixdat, subj!=4, subj!=15 ,) 
 cbPalette <- c("#56B4E9", "#E69F00")
 library(lme4)
 library(ggplot2)
 library(scales)
 #library(bear)
 #library(boot)
+
 
 
 
@@ -26,7 +28,7 @@ m = m + facet_wrap(~fixNum, scales="free_y", nrow=4)
 m = m + theme_bw()
 m = m + scale_x_continuous(name="fixation horizontal postition", breaks=c(0,512,1024), expand=c(0,0))
 ggsave("plots/FixXpostByFixNum.pdf", width=9, height=9)
-
+ggsave("plots/FixXpostByFixNum.jpg",dpi=600, width=9, height=8)
 
 # classify every fixation as homo (left), central, or hetro (right)
 centralWidth = 64 #change to 1 visual degree
@@ -49,7 +51,7 @@ plt = plt + theme_bw() + facet_wrap(~subj)
 plt = plt + scale_x_continuous(name="fixation number", breaks=c(2,4,6,8,10))
 plt = plt + scale_y_continuous(name="proportion of fixations to heterogeneous side")
 ggsave("plots/FixXsideByFixNumAndSubjExCentral.pdf", width=9, height=9)
-
+ggsave("plots/FixXsideByFixNumAndSubjExCentral.jpg",dpi=600, width=9, height=9)
 
 # get mean person plot
 aggData2 = (filter(aggData, fixNum<11) 
@@ -67,6 +69,7 @@ plt = plt + theme_bw()
 plt = plt + scale_y_continuous(name="proportion of fixations to heterogeneous side", breaks=c(0,0.5,1), limits=c(0,1))
 plt = plt + scale_x_continuous('fixation number', breaks=c(2,4,6,8,10))
 ggsave("plots/meanPersonSide.pdf", width=6, height=4)
+ggsave("plots/meanPersonSide.jpg",dpi=600, width=6, height=4)
 
 fixWasteDat = (filter(fixdat, side!="central")
 %>% group_by(subj, targSide, trial)
@@ -84,6 +87,7 @@ plt = plt + theme_bw()
 plt = plt + scale_x_continuous(name="num. fix. to homogeneous side")
 plt = plt + scale_y_continuous(name="reaction time (seconds)")
 ggsave("plots/trialByTrialCor.pdf", height=3.2, width=3.2)
+ggsave("plots/trialByTrialCor.jpg",dpi=600, height=3.2, width=3.2)
 
 library(lme4)
 m = lmer(data=filter(fixWasteDat, targSide=="absent"), fixNumTotal~fixNumHomo + (fixNumHomo|subj))
@@ -118,4 +122,4 @@ plt = plt + theme_bw()
 plt = plt + scale_x_continuous(name="prop. homogeneous fixations (absent)", limits=c(0,1))
 plt = plt + scale_y_continuous(name="median RT (present)")
 plt = plt + geom_text(data=NULL, label="A", x = 0, y=8 )
-ggsave("../plots/personByPersonCor.pdf", height=3.2, width=3.2)
+ggsave("plots/personByPersonCor.pdf", height=3.2, width=3.2)

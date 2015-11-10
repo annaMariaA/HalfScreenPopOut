@@ -25,14 +25,14 @@ saccInfo <- function(trialDat)
 }
 
 
-subjectsToRemove = c(2)#one experimenter nr.2 and two at chance in parallel, 4 and 15 at chance
+subjectsToRemove = c(2)#one experimenter nr.2, only completed a few trials, and two at chance in parallel, 4 and 15 at chance
 # max fixation duration - remove trial if it is exceeded 
 maxFixDur = 2000
 
 # read in reaction time and acc data:
 # this will allow us to remove fixation data for incorrect trials
 print("Processing RT and Acc data")
-dat <- read.csv("data/RtAcc16.txt", sep="\t")
+dat <- read.csv("data/RtAcc.txt", sep="\t")
 names(dat) = c("subj", "trialNum", "hemiType", "hemiSide","easySide", "targPresent", "targSide", "RT", "X", "acc")
 dat = select(dat, subj, trialNum, easySide, targPresent, targSide, RT, acc)
 
@@ -42,11 +42,13 @@ levels(dat$targPresent) = c("absent", "present")
 levels(dat$targSide) = c('left', 'right', 'absent')
 dat$easySide = as.factor(dat$easySide)
 levels(dat$easySide) = c("left", "right")
-dat$subj = as.factor(dat$subj)
 
 # remove some subjects
+
+dat$subj = as.factor(dat$subj)
 dat = (dat[!(dat$subj%in% subjectsToRemove),])
-dat$subj = factor(dat$subj)
+dat$subj = as.factor(dat$subj)
+levels(dat$subj)
 
 # refdefine targSide relative to easySide
 dat$targSideRel = as.factor(as.character(dat$easySide) == as.character(dat$targSide))
@@ -70,7 +72,7 @@ rm(dat, rtdat)
 #############################
 
 print("Processing Fix data...")
-dat <- read.csv("data/FixExp1.txt", header=T, sep="\t",
+dat <- read.csv("data/Fix.txt", header=T, sep="\t",
 	colClass = c(
 		"subj"="factor", 
 		"trialNum"="numeric", 
@@ -108,9 +110,10 @@ dat$targSideRel[which(dat$targPresent=="absent")] = "absent"
 dat$fixDur = with(dat, fixOff - fixOn)
 
 # remove unwanted participants
-dat = filter(dat, !(subj %in% subjectsToRemove))
-dat$subj = factor(dat$subj)
 
+dat$subj = as.factor(dat$subj)
+dat = (dat[!(dat$subj%in% subjectsToRemove),])
+levels(dat$subj)
 
 # #we want to filter out all incorrect trials!
  print("...removing fixation for incorrect trials and fix.dur exceptions")

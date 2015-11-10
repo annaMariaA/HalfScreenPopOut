@@ -70,7 +70,7 @@ rm(dat, rtdat)
 #############################
 
 print("Processing Fix data...")
-dat <- read.csv("data/fix16.txt", header=T, sep="\t",
+dat <- read.csv("data/FixExp1.txt", header=T, sep="\t",
 	colClass = c(
 		"subj"="factor", 
 		"trialNum"="numeric", 

@@ -99,7 +99,7 @@ levels(dat$targSide) = c("left", "right", "absent")
 levels(dat$easySide) = c("left", "right","x")
 
 
-dat = select(dat, subj, trialNum, fixNum, easySide, fixX, fixY, fixOn, fixOff, targPresent, targSide, row, column)
+dat = select(dat, subj, trialNum, fixNum, easySide, fixX, fixY, fixOn, fixOff, targPresent, targSide,var, condition)
 
 # refdefine targSide relative to easySide - ie, hetrogeneous array always on left
 dat$targSideRel = as.factor(as.character(dat$easySide) == as.character(dat$targSide))
@@ -108,8 +108,8 @@ dat$targSideRel[which(dat$targPresent=="absent")] = "absent"
 
 dat$var = as.factor(dat$var)
 levels(dat$var) = c("hetero", "homo", "x")
-dat$con = as.factor(dat$con)
-levels(dat$con) = c("full", "half")
+dat$condition = as.factor(dat$condition)
+levels(dat$condition) = c("full", "half")
 
 # calcualte fixation durations
 dat$fixDur = with(dat, fixOff - fixOn)
@@ -236,7 +236,7 @@ rm(s, t)
 # 	rm(subjdat)
 # }
  dat = fixdat
-fixdat = data.frame(subj=dat$subj, trial=dat$trialNum, targSide=dat$targSideRel, fixNum=dat$fixNum, fixX=dat$fixX, fixY=dat$fixY, fixDur=dat$fixDur, saccAmp=dat$saccAmp, saccAng=dat$saccAng, easySide=dat$easySide)
+fixdat = data.frame(subj=dat$subj, trial=dat$trialNum, targSide=dat$targSideRel, fixNum=dat$fixNum, fixX=dat$fixX, fixY=dat$fixY, fixDur=dat$fixDur, saccAmp=dat$saccAmp, saccAng=dat$saccAng, easySide=dat$easySide, var=dat$var, condition=dat$condition)
 
 
 saveRDS(fixdat,file="processedFixData.Rda")

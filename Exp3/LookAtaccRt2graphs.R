@@ -44,10 +44,10 @@ aggregate(data=rtdat, acc ~ targSide, FUN="mean")
 
 # # now lets look at RTs... 
 # # first we need to filter out incorrect trials
-# rtdat = rtdat[which(rtdat$acc==1),]
-# library(scales)     
+ rtdat = rtdat[which(rtdat$acc==1),]
+ library(scales)     
 # # rt for target present and absent
-# rtdat  = aggregate(data=rtdat, RT ~ subj +targSide, FUN="median")
+ rtdat  = aggregate(data=rtdat, RT ~ subj +targSide, FUN="median")
 # #normDataWithin=(data=NULL, idvar, measurevar, betweenvars=NULL,
 # errorbar = summarySEwithin(rtdat, measurevar="RT", withinvars=("targSide"), idvar="subj")
 # errorbar$lower=c(4.14,1.67, 2.55 )

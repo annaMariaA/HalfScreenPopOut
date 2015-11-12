@@ -1,22 +1,41 @@
 library(ggplot2)
 library(scales)
+library(dplyr)
+
+library(lme4)
 # setwd("C:/Users/r02al13/Desktop/HalfPopOutAnalysis")
 rtdat = readRDS(file="processedRTandAccData.Rda")
 # levels(rtdat$targSide) = c("parallel","serial","absent")
 cbPalette <- c("#E69F00", "#56B4E9","#B5CB8B")
 
-plt = ggplot(rtdat, aes(x=targSide,y=RT)) + geom_boxplot()
+rtdat$targSide[rtdat$var=="homo" & rtdat$targSide!="absent"] = "homogeneous"
+
+plt = ggplot(rtdat, aes(x=targSide,y=RT, fill=var)) + geom_boxplot()
 plt = plt + coord_trans(y="log2") + theme_bw()
 plt = plt + scale_y_continuous(name="reaction time (seconds)", breaks=c(1,2,4,8,16,32), limits=c(1,32))
+plt
 ggsave("../plots/boxplotRT.pdf")
 
-plt = ggplot(rtdat, aes(x=RT, fill=targSide)) + geom_density(alpha=0.7)
-plt = plt + theme_bw() + theme(legend.justification=c(1,1), legend.position=c(1,1))
-plt = plt + scale_fill_discrete(name='target position') +  scale_fill_brewer(palette="Set2")
-plt = plt + scale_x_continuous(name="reaction time (seconds)")
-ggsave("../plots/densityRT.pdf", width=6, height=4)
 
-#
+m = lmer(log(RT) ~ var + (var|subj), filter(rtdat, targSide=="absent"))
+
+aggDat = (filter(rtdat, targSide=="absent") 
+  %>% group_by(subj) 
+    %>% summarise(
+     hetero = median(RT[var=='hetero'], na.rm=T),
+     homo  = median(RT[var=='homo'], na.rm=T),
+     split = median(RT[var=='x'], na.rm=T)))
+
+plt = ggplot(aggDat, aes(x=(homo+hetero)/2, y=split)) + geom_point()
+plt = plt + geom_abline(slope=1, intercept=0, colour="red")
+plt = plt + geom_smooth(method=lm, fullrange=T)
+plt = plt + scale_y_continuous(name="TA RT for split stimuli", limits=c(0,15), expand=c(0,0))
+plt = plt + scale_x_continuous(name="prediction", limits=c(0,15), expand=c(0,0))
+plt = plt + theme_bw()
+ggsave("exp3rt.pdf", width=3, height=3)
+
+
+
  library(lme4)
 # 
 # 

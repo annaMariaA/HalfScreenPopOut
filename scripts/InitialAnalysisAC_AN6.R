@@ -25,7 +25,7 @@ saccInfo <- function(trialDat)
 }
 
 
-subjectsToRemove = c(2)#one experimenter nr.2, only completed a few trials, and two at chance in parallel, 4 and 15 at chance
+subjectsToRemove = c(2,5)#one experimenter nr.2, only completed a few trials, and two at chance in parallel, 4 and 15 at chance
 # max fixation duration - remove trial if it is exceeded 
 maxFixDur = 2000
 
@@ -47,7 +47,7 @@ levels(dat$easySide) = c("left", "right")
 
 dat$subj = as.factor(dat$subj)
 dat = (dat[!(dat$subj%in% subjectsToRemove),])
-dat$subj = as.factor(dat$subj)
+dat$subj = factor(dat$subj)
 levels(dat$subj)
 
 # refdefine targSide relative to easySide
@@ -113,7 +113,9 @@ dat$fixDur = with(dat, fixOff - fixOn)
 
 dat$subj = as.factor(dat$subj)
 dat = (dat[!(dat$subj%in% subjectsToRemove),])
+dat$subj = factor(dat$subj)
 levels(dat$subj)
+
 
 # #we want to filter out all incorrect trials!
  print("...removing fixation for incorrect trials and fix.dur exceptions")

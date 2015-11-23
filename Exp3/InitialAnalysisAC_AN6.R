@@ -1,7 +1,7 @@
 
 library(dplyr)
 # TODO: check subjects to replace!
- setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut/Exp3")
+ # setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut/Exp3")
 
 saccInfo <- function(trialDat)
 {

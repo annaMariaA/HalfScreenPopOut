@@ -15,7 +15,7 @@ plt = plt + coord_trans(y="log2") + theme_bw()
 plt = plt + scale_y_continuous(name="reaction time (seconds)", breaks=c(1,2,4,8,16,32), limits=c(1,32))
 plt
 ggsave("../plots/boxplotRT.pdf")
-
+ 
 
 m = lmer(log(RT) ~ var + (var|subj), filter(rtdat, targSide=="absent"))
 

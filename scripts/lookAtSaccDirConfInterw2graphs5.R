@@ -5,12 +5,12 @@ library(binom)
 # # setwd("~/Desktop/HalfPopOutAnalysisToday")
 # setwd("~/Documents/HalfPopOutAnalysisToday")
 #<<<<<<< Updated upstream
- setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut")
-fixdat = readRDS(file="data/processedFixData.Rda")
+ # setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut")
+fixdat = readRDS(file="../data/processedFixData.Rda")
 fixdat = (filter(fixdat, subj!=4, subj!=15)) 
 #=======
 
-fixdat = readRDS(file="data/processedFixData.Rda")
+fixdat = readRDS(file="../data/processedFixData.Rda")
 
 levels(fixdat$subj) = 1:12
 #>>>>>>> Stashed changes
@@ -31,11 +31,11 @@ m = ggplot(
 	data=filter(fixdat, fixNum<13, fixX<1024, fixX>0, targSide=="absent"), 
 	aes(x = fixX))
 m = m + geom_histogram(fill="purple", binwidth=64) 
-m = m + facet_wrap(~fixNum, scales="free_y", nrow=4)
+m = m + facet_wrap(~fixNum, scales="free_y", nrow=7)
 m = m + theme_bw()
 m = m + scale_x_continuous(name="fixation horizontal postition", breaks=c(0,512,1024), expand=c(0,0))
-ggsave("plots/FixXpostByFixNum.pdf", width=9, height=9)
-ggsave("plots/FixXpostByFixNum.jpg",dpi=600, width=9, height=8)
+ggsave("../plots/FixXpostByFixNum.pdf", width=9, height=5)
+ggsave("../plots/FixXpostByFixNum.jpg",dpi=600, width=9, height=5)
 
 # classify every fixation as homo (left), central, or hetro (right)
 centralWidth = 64 #change to 1 visual degree
@@ -54,11 +54,11 @@ aggData = (filter(fixdat, side!="central", fixNum<6, fixNum>1, targSide=="absent
 
 plt = ggplot(aggData, aes(x=fixNum, y=propHetro, ymin=lower, ymax=upper))
 plt = plt + geom_point() + geom_path(se=F) + geom_errorbar()
-plt = plt + theme_bw() + facet_wrap(~subj)
+plt = plt + theme_bw() + facet_wrap(~subj, nrow=2)
 plt = plt + scale_x_continuous(name="fixation number", breaks=c(2,4,6,8,10))
 plt = plt + scale_y_continuous(name="proportion of fixations to heterogeneous side")
-ggsave("plots/FixXsideByFixNumAndSubjExCentral.pdf", width=9, height=9)
-ggsave("plots/FixXsideByFixNumAndSubjExCentral.jpg",dpi=600, width=9, height=9)
+ggsave("../plots/FixXsideByFixNumAndSubjExCentral.pdf", width=9, height=4)
+ggsave("../plots/FixXsideByFixNumAndSubjExCentral.jpg",dpi=600, width=9, height=5)
 
 # get mean person plot
 aggData2 = (filter(aggData, fixNum<6) 
@@ -75,8 +75,8 @@ plt = plt + geom_path() + geom_errorbar()# + geom_hline(y=0.5)
 plt = plt + theme_bw() 
 plt = plt + scale_y_continuous(name="proportion of fixations to heterogeneous side", breaks=c(0,0.5,1), limits=c(0,1))
 plt = plt + scale_x_continuous('fixation number', breaks=c(2,4,6,8,10))
-ggsave("plots/meanPersonSide.pdf", width=6, height=4)
-ggsave("plots/meanPersonSide.jpg",dpi=600, width=6, height=4)
+ggsave("../plots/meanPersonSide.pdf", width=6, height=4)
+ggsave("../plots/meanPersonSide.jpg",dpi=600, width=6, height=4)
 
 fixWasteDat = (filter(fixdat, side!="central")
 %>% group_by(subj, targSide, trial)
@@ -84,24 +84,21 @@ fixWasteDat = (filter(fixdat, side!="central")
  fixNumTotal =length(fixNum),
  fixNumHomo = sum(side=="homo")))
 
-rtdat = readRDS(file="data/processedRTandAccData.Rda")
+rtdat = readRDS(file="../data/processedRTandAccData.Rda")
 
 fixWasteDat = merge(fixWasteDat, rtdat)
 
 plt = ggplot(filter(fixWasteDat, targSide=="absent"), aes(x=fixNumHomo, y=RT)) 
 plt = plt + geom_point(colour="gray") + geom_smooth(method="lm", se=F, colour="black")
 plt = plt + theme_bw()
-#<<<<<<< Updated upstream
+
 plt = plt + scale_x_continuous(name="num. fix. to homogeneous side")
 plt = plt + scale_y_continuous(name="reaction time (seconds)")
-ggsave("plots/trialByTrialCor.pdf", height=3.2, width=3.2)
-ggsave("plots/trialByTrialCor.jpg",dpi=600, height=3.2, width=3.2)
-#=======
-plt = plt + scale_x_continuous(name="num homogeneous fixations (absent)")
-plt = plt + scale_y_continuous(name="reaction time (s)")
+
 plt = plt + geom_text(data=NULL, label="B", x=-Inf, y=Inf, vjust=2,hjust=-1, size=5)
-ggsave("plots/trialByTrialCor.pdf", height=3.2, width=3.2)
-#>>>>>>> Stashed changes
+ggsave("../plots/trialByTrialCor.pdf", height=3.2, width=3.2)
+ggsave("../plots/trialByTrialCor.jpg",dpi=600, height=3.2, width=3.2)
+
 
 library(lme4)
 
@@ -134,9 +131,10 @@ homoRT = (filter(rtdat, targSide=="homogeneous", acc==1, is.finite(RT))
      medianRT_homo = median(RT)))
 
 dat = merge(homoRT, merge(hetroRT, indivDiffCorr))
-write.table(dat, "data/correlationData14pps10fix.txt", sep=",")
+write.table(dat, "../data/correlationData14pps10fix.txt", sep=",")
 
 cor.test(dat$medianRT_homo, dat$propHomo)
+cor.test(dat$medianRT_hetro, dat$propHomo)
 
 plt = ggplot(dat, aes(x=propHomo, y=medianRT_hetro)) + geom_point(colour="grey") + geom_smooth(method="lm", se=F, colour="black")
 plt = plt + theme_bw()
@@ -144,9 +142,9 @@ plt = plt + scale_x_continuous(name="prop. homogeneous fixations (absent)", limi
 plt = plt + scale_y_continuous(name="median RT (present)")
 #<<<<<<< Updated upstream
 plt = plt + geom_text(data=NULL, label="A", x = 0, y=8 )
-ggsave("plots/personByPersonCor.pdf", height=3.2, width=3.2)
+ggsave("../plots/personByPersonCor.pdf", height=3.2, width=3.2)
 #=======
 plt = plt + geom_text(data=NULL, label="A", x=-Inf, y=Inf, vjust=2,hjust=-1, size=5)
 plt
-ggsave("plots/personByPersonCor.pdf", height=3.2, width=3.2)
+ggsave("../plots/personByPersonCor.pdf", height=3.2, width=3.2)
 #>>>>>>> Stashed changes

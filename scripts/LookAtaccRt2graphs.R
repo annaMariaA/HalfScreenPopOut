@@ -1,7 +1,7 @@
 library(ggplot2)
 library(scales)
 #setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut")
-rtdat = readRDS(file="data/processedRTandAccData.Rda")
+rtdat = readRDS(file="../data/processedRTandAccData.Rda")
 cbPalette <- c("#E69F00", "#56B4E9","#B5CB8B")
 
 plt = ggplot(rtdat, aes(x=targSide,y=RT)) + geom_boxplot()
@@ -20,7 +20,9 @@ ggsave("../plots/densityRT.pdf", width=6, height=4)
 
 # # let us first look at accuracy for target present and absent
 accdat  = aggregate(data=rtdat, acc ~ subj + targSide, FUN="mean")
-write.csv(accdat, "data/accDat12pps.txt", row.names=F)
+
+aggregate(data=accdat, acc~targSide, FUN="mean")
+write.csv(accdat, "../data/accDat12pps.txt", row.names=F)
 
 # # now lets look at RTs... 
 # # first we need to filter out incorrect trials

@@ -1,7 +1,7 @@
 
 library(dplyr)
 # TODO: check subjects to replace!
- setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut")
+ # setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut")
 
 saccInfo <- function(trialDat)
 {
@@ -25,14 +25,14 @@ saccInfo <- function(trialDat)
 }
 
 
-subjectsToRemove = c(2,5)#one experimenter nr.2, only completed a few trials, and two at chance in parallel, 4 and 15 at chance
+subjectsToRemove = c(2)#one experimenter nr.2, only completed a few trials, and two at chance in parallel, 4 and 15 at chance
 # max fixation duration - remove trial if it is exceeded 
 maxFixDur = 2000
 
 # read in reaction time and acc data:
 # this will allow us to remove fixation data for incorrect trials
 print("Processing RT and Acc data")
-dat <- read.csv("data/RtAcc.txt", sep="\t")
+dat <- read.csv("../data/RtAcc.txt", sep="\t")
 names(dat) = c("subj", "trialNum", "hemiType", "hemiSide","easySide", "targPresent", "targSide", "RT", "X", "acc")
 dat = select(dat, subj, trialNum, easySide, targPresent, targSide, RT, acc)
 
@@ -61,7 +61,7 @@ rtdat = data.frame(subj=dat$subj, trial=dat$trial, targSide=dat$targSideRel, RT=
 rtdat$RT[rtdat$acc==0] = NaN
 
 # save!!!
-saveRDS(rtdat,file="data/processedRTandAccData.Rda")
+saveRDS(rtdat,file="../data/processedRTandAccData.Rda")
 
 # remove data for now
 rm(dat, rtdat)
@@ -72,7 +72,7 @@ rm(dat, rtdat)
 #############################
 
 print("Processing Fix data...")
-dat <- read.csv("data/Fix.txt", header=T, sep="\t",
+dat <- read.csv("../data/Fix.txt", header=T, sep="\t",
 	colClass = c(
 		"subj"="factor", 
 		"trialNum"="numeric", 
@@ -119,7 +119,7 @@ levels(dat$subj)
 
 # #we want to filter out all incorrect trials!
  print("...removing fixation for incorrect trials and fix.dur exceptions")
- accdat = readRDS(file="data/processedRTandAccData.Rda")
+ accdat = readRDS(file="../data/processedRTandAccData.Rda")
  dat$acc = 0
  for (s in levels(dat$subj))
  {
@@ -138,10 +138,10 @@ levels(dat$subj)
   print(paste("... keeping ", 100*mean(dat$acc), "% of fixations"))
   dat = filter(dat, acc==1)
 
-saveRDS(dat,file="data/processedFixData.Rda")
+saveRDS(dat,file="../data/processedFixData.Rda")
  rm(dat)
 
-fixdat = readRDS(file="data/processedFixData.Rda")
+fixdat = readRDS(file="../data/processedFixData.Rda")
 
 
 #
@@ -236,8 +236,8 @@ rm(s, t)
 fixdat = data.frame(subj=dat$subj, trial=dat$trialNum, targSide=dat$targSideRel, fixNum=dat$fixNum, fixX=dat$fixX, fixY=dat$fixY, fixDur=dat$fixDur, saccAmp=dat$saccAmp, saccAng=dat$saccAng, easySide=dat$easySide)
 
 
-saveRDS(fixdat,file="data/processedFixData.Rda")
-write.table(fixdat, "data/processedFixData.txt", sep=",")
+saveRDS(fixdat,file="../data/processedFixData.Rda")
+write.table(fixdat, "../data/processedFixData.txt", sep=",")
 
 
 

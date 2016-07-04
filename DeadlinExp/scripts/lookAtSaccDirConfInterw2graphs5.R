@@ -35,15 +35,15 @@ fixdat$side[which(fixdat$fixX >(512+centralWidth/2))] = "hetro"
 fixdat$side = as.factor(fixdat$side)
 
 aggData = (filter(fixdat, side!="central", fixNum<6, fixNum>1, targSide=="absent") 
-  %>% group_by(fixNum, subj, version) 
+  %>% group_by(fixNum, subj, completed, version) 
     %>% summarise(
      propHetro=mean(side=="hetro"), 
-     nTrials=length(trial)))#,
-     # lower = binom.confint(propHetro*nTrials,nTrials, method='wilson')$lower,
-     # upper = binom.confint(propHetro*nTrials,nTrials, method='wilson')$upper))
+     nTrials=length(trial),
+     lower = binom.confint(propHetro*nTrials,nTrials, method='wilson')$lower,
+     upper = binom.confint(propHetro*nTrials,nTrials, method='wilson')$upper))
 
-plt = ggplot(aggData, aes(x=fixNum, y=propHetro, ymin=lower, ymax=upper))
-plt = plt + geom_point() + geom_path(se=F) + geom_errorbar()
+plt = ggplot(aggData, aes(x=fixNum, y=propHetro, ymin=lower, ymax=upper, colour=version))
+plt = plt + geom_point() + geom_path() + geom_errorbar()
 plt = plt + theme_bw() + facet_wrap(~subj, nrow=2)
 plt = plt + scale_x_continuous(name="fixation number", breaks=c(2,4,6,8,10))
 plt = plt + scale_y_continuous(name="proportion of fixations to heterogeneous side")
@@ -52,7 +52,7 @@ ggsave("../plots/FixXsideByFixNumAndSubjExCentral.jpg",dpi=600, width=9, height=
 
 # get mean person plot
 aggData2 = (filter(aggData, fixNum<6) 
-  %>% group_by(fixNum, version) 
+  %>% group_by(fixNum, version, completed) 
     %>% summarise(
      mPropHetro=mean(propHetro), 
      stddev = sd(propHetro),
@@ -62,10 +62,10 @@ aggData2 = (filter(aggData, fixNum<6)
 
 plt = ggplot(aggData2, aes(x=fixNum,y=mPropHetro, ymin=lower, ymax=upper))
 plt = plt + geom_path() + geom_errorbar()# + geom_hline(y=0.5)
-plt = plt + theme_bw() +facet_wrap(~version)
+plt = plt + theme_bw() +facet_grid(completed~version)
 plt = plt + scale_y_continuous(name="proportion of fixations to heterogeneous side", breaks=c(0,0.5,1), limits=c(0,1))
 plt = plt + scale_x_continuous('fixation number', breaks=c(2,4,6,8,10))
-ggsave("../plots/meanPersonSide.pdf", width=6, height=4)
+ggsave("../plots/meanPersonSide.pdf", width=4, height=4)
 ggsave("../plots/meanPersonSide.jpg",dpi=600, width=6, height=4)
 
 fixWasteDat = (filter(fixdat, side!="central")

@@ -1,0 +1,1 @@
+"subj","trialNum","fixNum","easySide","fixX","fixY","fixOn","fixOff","targPresent","targSide","var","condition","targSideRel","fixDur","acc"

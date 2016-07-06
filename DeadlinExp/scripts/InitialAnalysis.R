@@ -21,6 +21,7 @@ saccInfo <- function(trialDat)
 	theta[nFix]    = NaN
 	saccInfo$amp   = sqrt(saccAmp2)
 	saccInfo$ang   = theta
+
 	return(saccInfo)
 }
 
@@ -35,8 +36,8 @@ print("Processing RT and Acc data")
 dat <- read.csv("../data/RtAcc.txt", sep="\t")
 names(dat) = c("subj","version", "completed", "trialNum","easySide", "targPresent","key", "targSide", "RT", "acc", "var", "con")
 
-dat$version = factor(paste(dat$version, dat$completed))
-levels(dat$version) = c('untimedFirst', 'untimedSecond', 'timedFirst','timedSecond')
+# dat$version = factor(paste(dat$version, dat$completed))
+# levels(dat$version) = c('untimedFirst', 'untimedSecond', 'timedFirst','timedSecond')
 dat = select(dat, subj, version, trialNum, easySide, targPresent, targSide, RT, acc, var, con)
 
 # Turn categorical data into factor
@@ -56,7 +57,7 @@ levels(dat$con) = c("full", "half")
 dat$subj = as.factor(dat$subj)
 #dat = (dat[!(dat$subj%in% subjectsToRemove),])
 dat$subj = as.factor(dat$subj)
-levels(dat$subj)
+
 
 # refdefine targSide relative to easySide
 dat$targSideRel = as.factor(as.character(dat$easySide) == as.character(dat$targSide))
@@ -67,6 +68,7 @@ dat$targSideRel[which(dat$targPresent=="absent")] = "absent"
 rtdat = data.frame(subj=dat$subj, version=dat$version, trial=dat$trial, targSide=dat$targSideRel, RT=dat$RT, acc=dat$acc, easySide=dat$easySide,var=dat$var, condition=dat$con )
 # we don't want to be looking at RTs for incorrect trials
 rtdat$RT[rtdat$acc==0] = NaN
+rtdat$trial = paste(rtdat$trial, rtdat$version, sep="")
 
 # save!!!
 saveRDS(rtdat,file="../data/processedRTandAccData.Rda")
@@ -103,6 +105,7 @@ levels(dat$targPresent) = c("absent", "present")
 levels(dat$targSide) = c("left", "right", "absent")
 levels(dat$easySide) = c("left", "right","x")
 
+dat$trialNum = paste(dat$trialNum, dat$version, sep="")
 
 dat = select(dat, subj,  version, completed, trialNum, fixNum, easySide, fixX, fixY, fixOn, fixOff, targPresent, targSide,var, condition)
 
@@ -122,8 +125,7 @@ dat$fixDur = with(dat, fixOff - fixOn)
 # remove unwanted participants
 
 dat$subj = as.factor(dat$subj)
-#dat = (dat[!(dat$subj%in% subjectsToRemove),])
-levels(dat$subj)
+
 
 # #we want to filter out all incorrect trials!
  print("...removing fixation for incorrect trials and fix.dur exceptions")
@@ -162,6 +164,7 @@ fixdat = readRDS(file="../data/processedFixData.Rda")
   
 for (s in levels(fixdat$subj))
 {
+	
 	subjDat = fixdat[which(fixdat$subj==s),]
 	subjDat$trialNum = factor(subjDat$trialNum)
 	for (t in levels(subjDat$trialNum))
@@ -195,6 +198,7 @@ fixdat$saccAmp = NaN
 fixdat$saccAng = NaN
 for (s in levels(fixdat$subj))
 {
+
 	subjdat = fixdat[which(fixdat$subj==s),]
 	subjdat$trialNum = factor(subjdat$trialNum)
 	for (t in levels(subjdat$trialNum))
@@ -204,9 +208,13 @@ for (s in levels(fixdat$subj))
 			saccDat    = saccInfo(fixdat[which(fixdat$subj==s & fixdat$trialNum==t),])		
 			fixdat$saccAmp[which(fixdat$subj==s & fixdat$trialNum==t)] = saccDat$amp
 			fixdat$saccAng[which(fixdat$subj==s & fixdat$trialNum==t)] = saccDat$ang	
+			
+			fixdat$fixOn[which(fixdat$subj==s & fixdat$trialNum==t)]=	
+			fixdat$fixOn[which(fixdat$subj==s & fixdat$trialNum==t)] - fixdat$fixOn[which(fixdat$subj==s  & fixdat$trialNum==t & fixdat$fixNum==1)]
 			rm(saccDat)	
 		}
 	}
+
 	rm(subjdat)
 }
 rm(s, t)
@@ -241,7 +249,8 @@ rm(s, t)
 # 	rm(subjdat)
 # }
  dat = fixdat
-fixdat = data.frame(subj=dat$subj, version=dat$version, completed=dat$completed, trial=dat$trialNum, targSide=dat$targSideRel, fixNum=dat$fixNum, fixX=dat$fixX, fixY=dat$fixY, fixDur=dat$fixDur, saccAmp=dat$saccAmp, saccAng=dat$saccAng, easySide=dat$easySide, var=dat$var, condition=dat$condition)
+fixdat = data.frame(subj=dat$subj, version=dat$version, completed=dat$completed, trial=dat$trialNum, targSide=dat$targSideRel, fixNum=dat$fixNum, fixX=dat$fixX, fixY=dat$fixY, fixOn=dat$fixOn, fixDur=dat$fixDur, saccAmp=dat$saccAmp, saccAng=dat$saccAng, easySide=dat$easySide, var=dat$var, condition=dat$condition)
+
 
 
 saveRDS(fixdat,file="../data/processedFixData.Rda")

@@ -68,7 +68,12 @@ dat$targSideRel[which(dat$targPresent=="absent")] = "absent"
 rtdat = data.frame(subj=dat$subj, version=dat$version, trial=dat$trial, targSide=dat$targSideRel, RT=dat$RT, acc=dat$acc, easySide=dat$easySide,var=dat$var, condition=dat$con )
 # we don't want to be looking at RTs for incorrect trials
 rtdat$RT[rtdat$acc==0] = NaN
+
+levels(rtdat$version) = c("N", "T")
+
 rtdat$trial = paste(rtdat$trial, rtdat$version, sep="")
+
+
 
 # save!!!
 saveRDS(rtdat,file="../data/processedRTandAccData.Rda")
@@ -105,6 +110,7 @@ levels(dat$targPresent) = c("absent", "present")
 levels(dat$targSide) = c("left", "right", "absent")
 levels(dat$easySide) = c("left", "right","x")
 
+levels(dat$version) = c("N", "T")
 dat$trialNum = paste(dat$trialNum, dat$version, sep="")
 
 dat = select(dat, subj,  version, completed, trialNum, fixNum, easySide, fixX, fixY, fixOn, fixOff, targPresent, targSide,var, condition)
@@ -153,18 +159,10 @@ saveRDS(dat,file="../data/processedFixData.Rda")
 
 fixdat = readRDS(file="../data/processedFixData.Rda")
 
-
-#
-# flip hemiSide = right so we can pretend hemiSide isn't a condition
-#
-# print("...flipping trials for hemi==right")
-
  fixdat$fixX = fixdat$fixX - 512
-# itemdat$itemX = itemdat$itemX - 512 + 64
   
 for (s in levels(fixdat$subj))
 {
-	
 	subjDat = fixdat[which(fixdat$subj==s),]
 	subjDat$trialNum = factor(subjDat$trialNum)
 	for (t in levels(subjDat$trialNum))
@@ -182,13 +180,6 @@ rm(s,t, idx)
  fixdat$fixX = fixdat$fixX + 512
  fixdat$fixY = fixdat$fixY
 # itemdat$itemX = itemdat$itemX + 512 - 64
-
-
-# define itemID for each face
-# qx = 8*itemdat$itemX/1024
-# qy = 6*itemdat$itemY/768
-# itemdat$isTarget = (itemdat$itemID == " Target")
-# itemdat$itemID = as.factor((qx)*10 + (qy))
 
 #
 # get saccade info
@@ -220,34 +211,6 @@ for (s in levels(fixdat$subj))
 rm(s, t)
 
 #
-# assigning fixations to regions
-#
-# print("...assigning fixations to regions")
-# nItemsX = 8
-# nItemsY = 6
-# # quantise fix!
-# qx = ceiling(nItemsX*fixdat$fixX/1024)
-# qy = ceiling(nItemsY*fixdat$fixY/768)
-# qx[qx<1] = NaN
-# qy[qy<1] = NaN
-# qx[qx>7] = NaN
-# qy[qy>5] = NaN
-
-# fixdat$fixRegion = as.factor((qx-1)*10 + (qy-1))
-
-# for (s in levels(fixdat$subj))
-# {
-# 	subjdat = fixdat[which(fixdat$subj==s),]
-# 	subjdat$trial = factor(subjdat$trial)
-#  	for (t in levels(subjdat$trial))
-# 	{
-# 		itemTrialDat = itemdat[itemdat$subj==s & itemdat$trial==t,] 		
-# 		trialDat = fixdat[s==fixdat$subj & t==fixdat$trial,]
-# 		trialDat = removeregionsthatwerentpresent(itemTrialDat, trialDat)
-# 		fixdat[s==fixdat$subj & t==fixdat$trial,] = trialDat
-# 	}
-# 	rm(subjdat)
-# }
  dat = fixdat
 fixdat = data.frame(subj=dat$subj, version=dat$version, completed=dat$completed, trial=dat$trialNum, targSide=dat$targSideRel, fixNum=dat$fixNum, fixX=dat$fixX, fixY=dat$fixY, fixOn=dat$fixOn, fixDur=dat$fixDur, saccAmp=dat$saccAmp, saccAng=dat$saccAng, easySide=dat$easySide, var=dat$var, condition=dat$condition)
 

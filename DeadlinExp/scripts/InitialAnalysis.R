@@ -26,7 +26,7 @@ saccInfo <- function(trialDat)
 }
 
 
-#subjectsToRemove = #one experimenter nr.2, only completed a few trials, and two at chance in parallel, 4 and 15 at chance
+subjectsToRemove =c( 3,6,10,11,16,31,30)# one participant familiar with the rationale/hypothesis, 4 completed previous versions and remaining two pps data missing
 # max fixation duration - remove trial if it is exceeded 
 maxFixDur = 2000
 

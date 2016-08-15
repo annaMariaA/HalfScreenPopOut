@@ -11,9 +11,9 @@ library(bear)
 library(scales)
 library(gridExtra)
 library(lme4)
-setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut/HalfScreenTimeLimit")
+# setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut/HalfScreenTimeLimit")
 
-rtdat = readRDS(file="processedRTandAccData.Rda")
+rtdat = readRDS(file="../data/processedRTandAccData.Rda")
 # levels(rtdat$targSide) = c("parallel","serial","absent")
 cbPalette <- c("#E69F00", "#56B4E9","#B5CB8B")
 

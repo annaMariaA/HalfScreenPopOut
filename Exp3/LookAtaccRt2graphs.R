@@ -3,12 +3,17 @@ library(scales)
 library(dplyr)
 
 library(lme4)
-# setwd("C:/Users/r02al13/Desktop/HalfPopOutAnalysis")
+
+ setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut/Exp3")
 rtdat = readRDS(file="processedRTandAccData.Rda")
 # levels(rtdat$targSide) = c("parallel","serial","absent")
 cbPalette <- c("#E69F00", "#56B4E9","#B5CB8B")
 
 rtdat$targSide[rtdat$var=="homo" & rtdat$targSide!="absent"] = "homogeneous"
+accdat  = aggregate(data=rtdat, acc ~ subj + targSide +var+condition, FUN="mean")
+write.csv(accdat, "AccData.txt", row.names=F)
+
+
 
 plt = ggplot(rtdat, aes(x=targSide,y=RT, fill=var)) + geom_boxplot()
 plt = plt + coord_trans(y="log2") + theme_bw()

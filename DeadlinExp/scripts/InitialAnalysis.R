@@ -1,7 +1,7 @@
 
 library(dplyr)
 # TODO: check subjects to replace!
-# setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut/HalfScreenTimeLimit")
+setwd("C:/Users/r02al13/Documents/GitHub/HalfScreenPopOut/DeadlinExp")
 
 saccInfo <- function(trialDat)
 {

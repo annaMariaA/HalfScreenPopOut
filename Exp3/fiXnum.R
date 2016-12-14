@@ -5,10 +5,16 @@ fixdat = readRDS(file="processedFixData.Rda")
 fixdatFull = fixdat[fixdat$var=="homo" ,]
 fixdatFull = fixdat[fixdatFull$targSide=="absent" ,]
 fixdatFull = fixdat[fixdatFull$condition=="full",]
+write.table(numFix, "NumberOfFixations.txt", sep=",")
 
-numFix = aggregate(data=fixdatFull, fixNum ~ subj+trial, FUN="max")
-numFix = aggregate(data=numFix, fixNum ~ subj, FUN="median")
-mean(numFix$fixNum)
+
+
+fixdat = readRDS(file="processedFixData.Rda")
+ fixdatFull = fixdat[fixdat$targSide=="absent" ,]
+ numFix = aggregate(data=fixdatFull, fixNum ~ subj+trial+var+condition, FUN="max")
+ numFix = aggregate(data=numFix, fixNum ~ subj+var+condition, FUN="median")
+write.table(numFix, "NumberOfFixations.txt", sep=",")
+
 
 #mean number of fixations on the target absent trials/parallel half of the screen
 # classify every fixation as homo (left), central, or hetro (right)

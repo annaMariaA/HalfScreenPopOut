@@ -233,7 +233,7 @@ rm(s, t)
 # 	rm(subjdat)
 # }
  dat = fixdat
-fixdat = data.frame(subj=dat$subj, trial=dat$trialNum, targSide=dat$targSideRel, fixNum=dat$fixNum, fixX=dat$fixX, fixY=dat$fixY, fixDur=dat$fixDur, saccAmp=dat$saccAmp, saccAng=dat$saccAng, easySide=dat$easySide)
+fixdat = data.frame(subj=dat$subj, trial=dat$trialNum, targSide=dat$targSideRel, fixNum=dat$fixNum, fixX=dat$fixX, fixY=dat$fixY, fixOn=dat$fixOn, fixDur=dat$fixDur, saccAmp=dat$saccAmp, saccAng=dat$saccAng, easySide=dat$easySide)
 
 
 saveRDS(fixdat,file="../data/processedFixData.Rda")

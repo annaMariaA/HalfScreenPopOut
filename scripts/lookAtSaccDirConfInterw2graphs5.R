@@ -23,8 +23,6 @@ library(scales)
 
 
 
-
-
 # Plot distribution of fixation x-coord by fixation number
 
 m = ggplot(

@@ -29,7 +29,7 @@ aggData = (filter(fixdat,
   side!="central", 
   fixNum<6, 
   fixNum>1,
-  fixOn<4000, 
+  # fixOn<2000, 
   targSide=="absent",
   condition=="half") 
   %>% group_by(fixNum, subj, version) 

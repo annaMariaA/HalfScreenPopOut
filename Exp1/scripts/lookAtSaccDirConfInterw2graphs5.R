@@ -134,15 +134,12 @@ write.table(dat, "../data/correlationData14pps10fix.txt", sep=",")
 cor.test(dat$medianRT_homo, dat$propHomo)
 cor.test(dat$medianRT_hetro, dat$propHomo)
 
-plt = ggplot(dat, aes(x=propHomo, y=medianRT_hetro)) + geom_point(colour="grey") + geom_smooth(method="lm", se=F, colour="black")
+plt = ggplot(dat, aes(x=propHomo, y=medianRT_hetro)) + geom_point() + geom_smooth(method="lm",colour="red")
 plt = plt + theme_bw()
 plt = plt + scale_x_continuous(name="prop. homogeneous fixations (absent)", limits=c(0,1))
 plt = plt + scale_y_continuous(name="median RT (present)")
-#<<<<<<< Updated upstream
-plt = plt + geom_text(data=NULL, label="A", x = 0, y=8 )
-ggsave("../plots/personByPersonCor.pdf", height=3.2, width=3.2)
-#=======
-plt = plt + geom_text(data=NULL, label="A", x=-Inf, y=Inf, vjust=2,hjust=-1, size=5)
+
+# plt = plt + geom_text(data=NULL, label="A", x=-Inf, y=Inf, vjust=2,hjust=-1, size=5)
 plt
 ggsave("../plots/personByPersonCor.pdf", height=3.2, width=3.2)
 #>>>>>>> Stashed changes
